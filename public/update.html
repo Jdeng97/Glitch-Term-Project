@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Update Profile</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+
+<body>
+    <header>
+        <div class="logo">Pet Paradise</div>
+        <nav>
+            <a href="index.html">Home</a>
+            <a href="login.html">Login</a>
+            <a href="register.html">Register</a>
+            <a href="profile.html">Profile</a>
+            <a href="cart.html">Cart</a>
+            <a href="about.html">About</a>
+            <a href="faq.html">FAQ</a>
+            <a href="update.html">Edit Profile</a>
+            <a href="/users/logout">Logout</a>
+        </nav>
+    </header>
+    <main>
+        <h1>Update Your Profile</h1>
+        <form id="updateForm" method="POST" action="/users/update">
+            <input type="hidden" name="id" id="userId">
+            <input type="text" name="name" placeholder="Name" id="name" required>
+            <input type="email" name="email" placeholder="Email" id="email" required>
+            <input type="password" name="password" placeholder="New Password" required>
+            <button type="submit">Update</button>
+        </form>
+    </main>
+
+    <script>
+        fetch('/users/profile')
+            .then(res => res.json())
+            .then(user => {
+                document.getElementById('userId').value = user.id;
+                document.getElementById('name').value = user.name;
+                document.getElementById('email').value = user.email;
+            })
+            .catch(() => {
+                alert('Not logged in');
+                window.location.href = '/login.html';
+            });
+    </script>
+
+    <footer>© 2025 Pet Paradise</footer>
+</body>
+
+</html>

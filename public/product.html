@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Product Details</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <!-- Nav Bar -->
+  <header>
+    <div class="logo">Pet Paradise</div>
+    <nav>
+      <a href="index.html">Home</a>
+      <a href="login.html">Login</a>
+      <a href="register.html">Register</a>
+      <a href="profile.html">Profile</a>
+      <a href="cart.html">Cart</a>
+      <a href="about.html">About</a>
+      <a href="faq.html">FAQ</a>
+      <a href="update.html">Edit Profile</a>
+      <a href="/users/logout">Logout</a>
+    </nav>
+  </header>
+
+  <main>
+    <section id="productInfo">
+      <h1>Loading product...</h1>
+    </section>
+
+    <section id="addToCart">
+      <!-- Cart form gets added here -->
+    </section>
+
+    <section id="reviews">
+      <h2>Customer Reviews</h2>
+      <ul id="reviewList">Loading reviews...</ul>
+    </section>
+
+    <section id="submitReview">
+      <h3>Leave a Review</h3>
+      <form id="reviewForm" method="POST">
+        <label for="rating">Rating:</label>
+        <select name="rating" id="rating" required>
+          <option value="">--Select--</option>
+          <option value="5">★★★★★ (5)</option>
+          <option value="4">★★★★☆ (4)</option>
+          <option value="3">★★★☆☆ (3)</option>
+        </select>
+        <br>
+        <textarea name="comment" id="comment" placeholder="Your review..." required></textarea><br>
+        <button type="submit">Submit Review</button>
+      </form>
+    </section>
+  </main>
+
+  <footer>© 2025 Pet Paradise</footer>
+
+  <script>
+    const params = new URLSearchParams(window.location.search);
+    const productId = params.get('id');
+    console.log("Product ID from URL:", productId);
+
+    // Load product details
+    fetch(`/products/${productId}`)
+      .then(res => {
+        if (!res.ok) throw new Error("Product not found");
+        return res.json();
+      })
+      .then(product => {
+        document.getElementById('productInfo').innerHTML = `
+          <img src="${product.image}" alt="${product.title}" style="max-width:200px">
+          <h1>${product.title}</h1>
+          <p>${product.description}</p>
+          <p>Price: $${product.price.toFixed(2)}</p>
+        `;
+        document.getElementById('addToCart').innerHTML = `
+          <form method="POST" action="/cart/add">
+            <input type="hidden" name="productId" value="${product.id}">
+            <input type="number" name="quantity" value="1" min="1" max="10">
+            <button type="submit">Add to Cart</button>
+          </form>
+        `;
+      })
+      .catch(err => {
+        console.error("Failed to load product:", err.message);
+        document.getElementById('productInfo').innerHTML = '<p>Product not found.</p>';
+      });
+
+    // Load reviews
+    fetch(`/products/${productId}/reviews`)
+      .then(res => {
+        if (!res.ok) throw new Error("Reviews not found");
+        return res.json();
+      })
+      .then(reviews => {
+        const list = document.getElementById('reviewList');
+        list.innerHTML = '';
+        if (reviews.length === 0) {
+          list.innerHTML = '<li>No reviews yet.</li>';
+        } else {
+          reviews.forEach(r => {
+            const li = document.createElement('li');
+            li.innerHTML = `<strong>${r.name}</strong> (${r.rating}/5): ${r.comment}`;
+            list.appendChild(li);
+          });
+        }
+      })
+      .catch(err => {
+        console.error("Failed to load reviews:", err.message);
+        document.getElementById('reviewList').innerHTML = '<li>Error loading reviews.</li>';
+      });
+
+    // Submit review
+    document.getElementById('reviewForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const rating = document.getElementById('rating').value;
+      const comment = document.getElementById('comment').value;
+
+      const res = await fetch(`/reviews/add`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ productId, rating, comment })
+      });
+
+      if (res.ok) {
+        alert('Review submitted!');
+        window.location.reload();
+      } else {
+        alert('Failed to submit review (are you logged in?)');
+      }
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Pet Paradise - Storefront</title>
+  <link rel="stylesheet" href="styles.css">
+  <style>
+    .search-container {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 10px;
+      margin: 20px;
+    }
+
+    .search-bar {
+      padding: 8px;
+      width: 300px;
+    }
+
+    .search-button {
+      padding: 8px 16px;
+      background-color: #f0c14b;
+      border: 1px solid #a88734;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+
+    .search-button:hover {
+      background-color: #ddb347;
+    }
+
+    .history {
+      text-align: center;
+      margin-bottom: 20px;
+    }
+
+    .history span {
+      display: inline-block;
+      background: #eee;
+      border-radius: 4px;
+      padding: 5px 10px;
+      margin: 5px;
+      cursor: pointer;
+    }
+
+    .history span:hover {
+      background: #ddd;
+    }
+
+    .clear-history {
+      display: inline-block;
+      margin-top: 10px;
+      padding: 4px 10px;
+      font-size: 12px;
+      cursor: pointer;
+      border: none;
+      background-color: #ccc;
+      border-radius: 4px;
+    }
+
+    .clear-history:hover {
+      background-color: #bbb;
+    }
+  </style>
+</head>
+
+<body>
+  <header>
+    <div class="logo">Pet Paradise</div>
+    <nav>
+      <a href="index.html">Home</a>
+      <a href="login.html">Login</a>
+      <a href="register.html">Register</a>
+      <a href="profile.html">Profile</a>
+      <a href="cart.html">Cart</a>
+      <a href="about.html">About</a>
+      <a href="faq.html">FAQ</a>
+      <a href="update.html">Edit Profile</a>
+      <a href="/users/logout">Logout</a>
+    </nav>
+  </header>
+
+  <main>
+    <h1>Search A Product</h1>
+
+    <div class="search-container">
+      <input type="text" placeholder="Search products..." class="search-bar" id="searchInput">
+      <button class="search-button" id="searchButton">Search</button>
+    </div>
+
+    <div class="history" id="searchHistory"></div>
+
+    <div class="product-grid" id="productGrid">
+      Loading products...
+    </div>
+  
+
+  </main>
+
+  <footer>© 2025 Pet Paradise</footer>
+
+  <script>
+    const grid = document.getElementById('productGrid');
+    const searchInput = document.getElementById('searchInput');
+    const searchButton = document.getElementById('searchButton');
+    const historyBox = document.getElementById('searchHistory');
+
+    function renderProducts(products) {
+      grid.innerHTML = '';
+      if (products.length === 0) {
+        grid.innerHTML = '<p>No products found.</p>';
+        return;
+      }
+
+      products.forEach(product => {
+        const div = document.createElement('div');
+        div.className = 'product-card';
+        div.innerHTML = `
+          <img src="${product.image}" alt="${product.title}">
+          <h3>${product.title}</h3>
+          <p>$${product.price.toFixed(2)}</p>
+          <a href="product.html?id=${product.id}">View Details</a>
+        `;
+        grid.appendChild(div);
+      });
+    }
+
+    function fetchAndRenderProducts(query = '') {
+      const url = query ? `/products?search=${encodeURIComponent(query)}` : '/products';
+      fetch(url)
+        .then(res => res.json())
+        .then(renderProducts)
+        .catch(() => {
+          grid.innerHTML = '<p>Failed to load products.</p>';
+        });
+    }
+
+    function addToHistory(term) {
+      let history = JSON.parse(sessionStorage.getItem('searchHistory')) || [];
+      if (!history.includes(term)) {
+        history.unshift(term);
+        if (history.length > 5) history.pop(); // max 5 terms
+        sessionStorage.setItem('searchHistory', JSON.stringify(history));
+      }
+      renderHistory();
+    }
+
+    function renderHistory() {
+      const history = JSON.parse(sessionStorage.getItem('searchHistory')) || [];
+      historyBox.innerHTML = '';
+      if (history.length > 0) {
+        historyBox.innerHTML = '<strong>Recent Searches:</strong><br>';
+        history.forEach(term => {
+          const tag = document.createElement('span');
+          tag.textContent = term;
+          tag.addEventListener('click', () => {
+            searchInput.value = term;
+            performSearch();
+          });
+          historyBox.appendChild(tag);
+        });
+
+        // Add clear button
+        const clearBtn = document.createElement('button');
+        clearBtn.textContent = 'Clear History';
+        clearBtn.className = 'clear-history';
+        clearBtn.addEventListener('click', () => {
+          sessionStorage.removeItem('searchHistory');
+          renderHistory();
+        });
+        historyBox.appendChild(document.createElement('br'));
+        historyBox.appendChild(clearBtn);
+      }
+    }
+
+    function performSearch() {
+      const query = searchInput.value.trim();
+      if (query) addToHistory(query);
+      fetchAndRenderProducts(query);
+    }
+
+    // Load all products initially
+    fetchAndRenderProducts();
+    renderHistory();
+
+    // Events
+    searchButton.addEventListener('click', performSearch);
+    searchInput.addEventListener('keypress', e => {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        performSearch();
+      }
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Your Cart - Pet Paradise</title>
+  <link rel="stylesheet" href="styles.css">
+  <style>
+    table {
+      width: 90%;
+      margin: 20px auto;
+      border-collapse: collapse;
+      background: #fff;
+      box-shadow: 0 0 5px rgba(0,0,0,0.1);
+    }
+
+    th, td {
+      padding: 12px;
+      text-align: center;
+      border-bottom: 1px solid #ccc;
+    }
+
+    input[type="number"] {
+      width: 60px;
+    }
+
+    button {
+      padding: 5px 10px;
+      background-color: #f0c14b;
+      border: 1px solid #a88734;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background-color: #ddb347;
+    }
+
+    h1, footer {
+      text-align: center;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="logo">Pet Paradise</div>
+    <nav>
+      <a href="index.html">Home</a>
+      <a href="login.html">Login</a>
+      <a href="register.html">Register</a>
+      <a href="profile.html">Profile</a>
+      <a href="cart.html">Cart</a>
+      <a href="about.html">About</a>
+      <a href="faq.html">FAQ</a>
+      <a href="/users/logout">Logout</a>
+    </nav>
+  </header>
+
+  <h1>Your Shopping Cart</h1>
+
+  <table>
+    <thead>
+      <tr>
+        <th>Product</th>
+        <th>Quantity</th>
+        <th>Price (Each)</th>
+        <th>Total</th>
+        <th>Update</th>
+      </tr>
+    </thead>
+    <tbody id="cartBody">
+      <!-- Filled by JavaScript -->
+    </tbody>
+  </table>
+
+  <div style="text-align: center; margin-top: 20px;">
+    <form method="POST" action="/cart/checkout">
+      <button type="submit">Proceed to Checkout</button>
+    </form>
+  </div>
+
+  <footer>© 2025 Pet Paradise</footer>
+
+  <script>
+  fetch('/cart')
+    .then(res => res.json())
+    .then(items => {
+      const tbody = document.getElementById('cartBody');
+      tbody.innerHTML = '';
+
+      if (items.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="5">Your cart is empty.</td></tr>';
+        return;
+      }
+
+      items.forEach(item => {
+        const row = document.createElement('tr');
+        row.innerHTML = `
+          <td>${item.title}</td>
+          <td>
+            <form method="POST" action="/cart/update" style="display:flex; gap:5px; justify-content:center;">
+              <input type="hidden" name="productId" value="${item.id}">
+              <input type="number" name="quantity" value="${item.quantity}" min="0" max="10" required>
+              <button type="submit">Update</button>
+            </form>
+          </td>
+          <td>$${item.price.toFixed(2)}</td>
+          <td>$${(item.price * item.quantity).toFixed(2)}</td>
+          <td></td>
+        `;
+        tbody.appendChild(row);
+      });
+    });
+</script>
+
+</body>
+</html>

@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Your Profile - Pet Paradise</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+ <header>
+        <div class="logo">Pet Paradise</div>
+        <nav>
+            <a href="index.html">Home</a>
+            <a href="login.html">Login</a>
+            <a href="register.html">Register</a>
+            <a href="profile.html">Profile</a>
+            <a href="cart.html">Cart</a>
+            <a href="about.html">About</a>
+            <a href="faq.html">FAQ</a>
+            <a href="update.html">Edit Profile</a>
+            <a href="/users/logout">Logout</a>
+        </nav>
+    </header>
+
+  <main class="profile-container">
+    <h1>Welcome, <span id="username">Loading...</span></h1>
+    <p>Email: <span id="useremail">Loading...</span></p>
+
+    <h2>Purchase History</h2>
+    <ul id="purchaseList">
+      <li>Loading...</li>
+    </ul>
+  </main>
+
+  <footer>© 2025 Pet Paradise. All rights reserved.</footer>
+
+  <script>
+    fetch('/users/profile')
+      .then(res => {
+        if (!res.ok) throw new Error('Not logged in');
+        return res.json();
+      })
+      .then(data => {
+        document.getElementById('username').textContent = data.name;
+        document.getElementById('useremail').textContent = data.email;
+
+        const list = document.getElementById('purchaseList');
+        list.innerHTML = ''; // clear "Loading..."
+
+        if (data.purchases.length === 0) {
+          list.innerHTML = '<li>No purchases yet.</li>';
+        } else {
+          data.purchases.forEach(purchase => {
+            const li = document.createElement('li');
+            li.textContent = `${purchase.quantity} × ${purchase.title} ($${purchase.price}) — ${new Date(purchase.purchased_at).toLocaleString()}`;
+            list.appendChild(li);
+          });
+        }
+      })
+      .catch(err => {
+        alert('Please log in to view your profile.');
+        window.location.href = '/login.html';
+      });
+  </script>
+</body>
+</html>
